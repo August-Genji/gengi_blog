@@ -1,6 +1,7 @@
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.viewsets import ModelViewSet
 
+from .permissions import IsOwnerOrReadOnly
 from .models import Comment, Post
 from .serializer import CommentSerializer, PostSeriliazer, UserSerializer
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
