@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comment, Post
+from .models import Comment, Post, Like, Favorite, Profile
 from django.contrib.auth.models import User
 
 
@@ -12,10 +12,12 @@ class UserSerializer(serializers.ModelSerializer):
 class PostSeriliazer(serializers.ModelSerializer):
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     author = serializers.CharField(source='author.username', read_only=True)
+    likes = serializers.SerializerMethodField()
+    favorites = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'author', 'title', 'content', 'created_date', 'comments']
+        fields = ['id', 'author', 'title', 'content', 'created_date', 'comments', 'likes', 'favorites',]
         read_only_fields = ['created_date', 'comments']
 
     def create(self, validated_data):
@@ -30,6 +32,12 @@ class PostSeriliazer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
+    def get_likes(self, obg):
+        return obg.likes.count()
+
+    def get_favorites(self, obg):
+        return obg.favorites.count()
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
@@ -38,6 +46,7 @@ class CommentSerializer(serializers.ModelSerializer):
     post_id = serializers.PrimaryKeyRelatedField(
         queryset=Post.objects.all(), source='post', write_only=True
     )
+
     class Meta:
         model = Comment
         fields = ['id', 'author', 'post', 'post_id', 'content', 'created_date']
@@ -60,3 +69,25 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_author(self, obj):
         return obj.author.username
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ['id', 'user', 'post', 'created_at']
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'user', 'post', 'added_at']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = Profile
+        fields = ['id', 'avatar', 'user']
