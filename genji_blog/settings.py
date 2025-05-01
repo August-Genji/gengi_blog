@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
 
-    'my_blog'
+    'my_blog.apps.MyBlogConfig'
 ]
 
 MIDDLEWARE = [
@@ -143,4 +143,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly'
     ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'],
 }

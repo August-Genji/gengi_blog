@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comment, Post, Like, Favorite, Profile
+from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
 from django.contrib.auth.models import User
 
 
@@ -37,6 +37,13 @@ class PostSeriliazer(serializers.ModelSerializer):
 
     def get_favorites(self, obg):
         return obg.favorites.count()
+
+class PostWorkFlowSerializer(serializers.ModelSerializer):
+    post_title = serializers.CharField(source='post.title', read_only=True)
+
+    class Meta:
+        model = PostWorkFlow
+        fields = ['post_title', 'step', 'note', 'timestamp']
 
 
 class CommentSerializer(serializers.ModelSerializer):
