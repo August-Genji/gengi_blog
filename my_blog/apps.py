@@ -6,5 +6,4 @@ class MyBlogConfig(AppConfig):
     name = 'my_blog'
 
     def ready(self):
-        print("РЕААААДДДИИИИИ")
         import my_blog.signals

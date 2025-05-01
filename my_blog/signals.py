@@ -12,9 +12,7 @@ def generate_post_description(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Post)
 def handle_post_workflow(sender, instance, created, **kwargs):
-    print("Я СРАБОТАЛ!!!!!!!!!!!!!!!!!!!!!!!")
     if created:
-        print("ПОСТ СОЗДАНАААААААААААААААААААААА")
         PostWorkFlow.objects.create(post=instance, step='created')
         if not instance.description:
             description = generate_post_description(instance.title)
