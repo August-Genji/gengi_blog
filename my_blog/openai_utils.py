@@ -1,9 +1,7 @@
-import os
 import openai
-from dotenv import load_dotenv
+from django.conf import settings
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = settings.OPENAI_API_KEY
 
 
 def generate_description(prompt):
