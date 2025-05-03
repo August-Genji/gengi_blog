@@ -4,8 +4,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from .permissions import IsOwnerOrReadOnly
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
-from .serializer import CommentSerializer, PostSeriliazer, UserSerializer, LikeSerializer, FavoriteSerializer, \
-    ProfileSerializer, PostWorkFlowSerializer
+from .serializer import CommentSerializer, PostSerializer, UserSerializer, LikeSerializer, FavoriteSerializer, \
+    ProfileSerializer
 from django.contrib.auth.models import User
 
 
@@ -22,7 +22,7 @@ class UserViewSet(ModelViewSet):
 
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = PostSeriliazer
+    serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):

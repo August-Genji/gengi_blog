@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
 
 
-class PostSeriliazer(serializers.ModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
     comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     author = serializers.CharField(source='author.username', read_only=True)
     likes = serializers.SerializerMethodField()
