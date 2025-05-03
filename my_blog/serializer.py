@@ -1,50 +1,7 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
 from django.contrib.auth.models import User
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
-
-
-class PostSerializer(serializers.ModelSerializer):
-    comments = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    author = serializers.CharField(source='author.username', read_only=True)
-    likes = serializers.SerializerMethodField()
-    favorites = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Post
-        fields = ['id', 'author', 'title', 'content', 'created_date',
-                  'comments', 'likes', 'favorites', 'email']
-        read_only_fields = ['created_date', 'comments']
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        user = request.user
-
-        if 'author' in validated_data:
-            if not user.is_staff:
-                raise serializers.ValidationError("Only admins can set the author manually.")
-        else:
-            validated_data['author'] = user
-
-        return super().create(validated_data)
-
-    def get_likes(self, obg):
-        return obg.likes.count()
-
-    def get_favorites(self, obg):
-        return obg.favorites.count()
-
-class PostWorkFlowSerializer(serializers.ModelSerializer):
-    post_title = serializers.CharField(source='post.title', read_only=True)
-
-    class Meta:
-        model = PostWorkFlow
-        fields = ['post_title', 'step', 'note', 'timestamp']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -72,11 +29,68 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
+    @extend_schema_field(str)
     def get_post(self, obj):
         return obj.post.title
 
+    @extend_schema_field(str)
     def get_author(self, obj):
         return obj.author.username
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'date_joined']
+
+
+class PostSerializer(serializers.ModelSerializer):
+    comments = CommentSerializer(many=True, read_only=True)
+    author = serializers.CharField(source='author.username', read_only=True)
+    likes = serializers.SerializerMethodField()
+    favorites = serializers.SerializerMethodField()
+    author_email = serializers.EmailField(source='author.email', read_only=True)
+
+
+    class Meta:
+        model = Post
+        fields = ['id', 'author', 'title', 'content', 'created_date',
+                  'comments', 'likes', 'favorites', 'author_email']
+        read_only_fields = ['created_date', 'comments']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        user = request.user
+
+        if 'author' in validated_data:
+            if not user.is_staff:
+                raise serializers.ValidationError("Only admins can set the author manually.")
+        else:
+            validated_data['author'] = user
+
+        return super().create(validated_data)
+
+    @extend_schema_field(int)
+    def get_likes(self, obg):
+        return obg.likes.count()
+
+    @extend_schema_field(int)
+    def get_favorites(self, obg):
+        return obg.favorites.count()
+
+
+class PostWorkFlowSerializer(serializers.ModelSerializer):
+    post_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostWorkFlow
+        fields = ['post_title', 'step', 'note', 'timestamp']
+
+    @extend_schema_field(str)
+    def get_post_title(self, obj):
+        return obj.post.title
+
+
 
 
 class LikeSerializer(serializers.ModelSerializer):
@@ -88,14 +102,19 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source='post.author.username', read_only=True)
+    post = serializers.CharField(source='post.title', read_only=True)
     user = serializers.CharField(source='user.username', read_only=True)
 
     class Meta:
         model = Favorite
-        fields = ['id', 'user', 'post', 'added_at']
+        fields = ['id', 'user', 'author', 'post', 'added_at']
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username', read_only=True)
+
     class Meta:
         model = Profile
         fields = ['id', 'avatar', 'user']
+

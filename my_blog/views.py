@@ -2,10 +2,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
 
+from .filters import PostWorkFlowFilter
 from .permissions import IsOwnerOrReadOnly
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
-from .serializer import CommentSerializer, PostSerializer, UserSerializer, LikeSerializer, FavoriteSerializer, \
-    ProfileSerializer
+from .serializer import CommentSerializer, PostSerializer, CustomUserSerializer, LikeSerializer, FavoriteSerializer, \
+    ProfileSerializer, PostWorkFlowSerializer
 from django.contrib.auth.models import User
 
 
@@ -17,7 +18,7 @@ class CommentViewSet(ModelViewSet):
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomUserSerializer
 
 
 class PostViewSet(ModelViewSet):
@@ -31,15 +32,15 @@ class PostViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {'request': self.request}
 
+
+
 class PostWorkFlowViewSet(ModelViewSet):
     queryset = PostWorkFlow.objects.all().order_by('-timestamp')
-    serializer_class = ProfileSerializer
+    serializer_class = PostWorkFlowSerializer
     permission_classes = [IsAdminUser]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        'step': ['exact'],
-        'post_title': ['icontains'],
-    }
+    filterset_class = PostWorkFlowFilter
+
 
 class LikeViewSet(ModelViewSet):
     queryset = Like.objects.all()
@@ -57,6 +58,7 @@ class FavoriteViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()

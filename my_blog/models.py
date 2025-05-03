@@ -7,7 +7,6 @@ from django.dispatch import receiver
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=1000)
-    email = models.EmailField(unique=True, blank=True, null=True)
     content = models.CharField(max_length=1000)
     created_date = models.DateField(auto_now_add=True)
     update_date = models.DateField(auto_now=True)
