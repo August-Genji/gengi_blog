@@ -1,3 +1,4 @@
+from django.db.models import Count
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
@@ -50,12 +51,14 @@ class PostSerializer(serializers.ModelSerializer):
     likes = serializers.SerializerMethodField()
     favorites = serializers.SerializerMethodField()
     author_email = serializers.EmailField(source='author.email', read_only=True)
+    like_count = serializers.IntegerField(read_only=True)
+    favorites_count = serializers.IntegerField(read_only=True)
 
 
     class Meta:
         model = Post
         fields = ['id', 'author', 'title', 'content', 'created_date',
-                  'comments', 'likes', 'favorites', 'author_email']
+                  'comments', 'likes', 'favorites', 'author_email', 'like_count', 'favorites_count']
         read_only_fields = ['created_date', 'comments']
 
     def create(self, validated_data):
@@ -69,6 +72,8 @@ class PostSerializer(serializers.ModelSerializer):
             validated_data['author'] = user
 
         return super().create(validated_data)
+
+    # @extend_schema_field(int)
 
     @extend_schema_field(int)
     def get_likes(self, obg):

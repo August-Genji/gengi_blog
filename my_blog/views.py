@@ -1,8 +1,10 @@
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
+from rest_framework import filters
 
-from .filters import PostWorkFlowFilter
+from .filters import PostWorkFlowFilter, PostFilter
 from .permissions import IsOwnerOrReadOnly
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
 from .serializer import CommentSerializer, PostSerializer, CustomUserSerializer, LikeSerializer, FavoriteSerializer, \
@@ -25,7 +27,13 @@ class PostViewSet(ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    fiterset_class = PostFilter
+    search_fields = ['title', 'content', 'author__username']
+    ordering_fields = ['created_date', 'update_date', 'like_count', 'favorites_count', 'author__username']
 
+    def get_queryset(self):
+        return Post.objects.annotate(like_count=Count('likes'), favorites_count=Count('favorites')).all()
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
