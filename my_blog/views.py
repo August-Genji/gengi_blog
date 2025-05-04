@@ -1,8 +1,14 @@
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import filters
+from rest_framework import filters, response
+from django.http import HttpResponse
+import csv
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 
 from .filters import PostWorkFlowFilter, PostFilter
 from .permissions import IsOwnerOrReadOnly
@@ -32,14 +38,37 @@ class PostViewSet(ModelViewSet):
     search_fields = ['title', 'content', 'author__username']
     ordering_fields = ['created_date', 'update_date', 'like_count', 'favorites_count', 'author__username']
 
+    @extend_schema(summary="Экспорт постов в csv или json", description=(
+            "Экспортируем список посотов с полями : id, title, author_name" "like_count, favorites_count, created_date.\n\n"
+            "**Формат:**?format=json или ?format=csv"
+    ), responses={200: OpenApiTypes.BINARY})
+    @action(detail=False, methods=['get'], url_path='export')
+    def export(self, request, *args):
+        export_format = self.request.query_params.get('format', 'json')
+
+        queryset = self.get_queryset()
+        data = queryset.values('id', 'title', 'author__username', 'like_count', 'favorites_count', 'created_date')
+
+        if export_format == 'csv':
+            http_response = HttpResponse(content_type='text/csv')
+            http_response['Content-Disposition'] = 'attachment; filename="posts.cvs"'
+            writer = csv.DictWriter(http_response, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+            return http_response
+        elif export_format == 'json':
+            return Response(list(data))
+        else:
+            return Response({'error': 'Unsupported format'}, status=400)
+
     def get_queryset(self):
         return Post.objects.annotate(like_count=Count('likes'), favorites_count=Count('favorites')).all()
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     def get_serializer_context(self):
         return {'request': self.request}
-
 
 
 class PostWorkFlowViewSet(ModelViewSet):

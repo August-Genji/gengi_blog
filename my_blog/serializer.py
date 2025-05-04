@@ -73,7 +73,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-    # @extend_schema_field(int)
+
 
     @extend_schema_field(int)
     def get_likes(self, obg):
