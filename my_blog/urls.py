@@ -1,4 +1,3 @@
-from rest_framework.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .views import UserViewSet, PostViewSet, CommentViewSet, LikeViewSet, FavoriteViewSet, ProfileViewSet, PostWorkFlowViewSet

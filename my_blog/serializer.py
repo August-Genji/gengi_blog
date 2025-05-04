@@ -1,6 +1,6 @@
-from django.db.models import Count
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+
 from .models import Comment, Post, Like, Favorite, Profile, PostWorkFlow
 from django.contrib.auth.models import User
 

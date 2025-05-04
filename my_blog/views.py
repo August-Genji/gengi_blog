@@ -4,7 +4,7 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import filters, response
+from rest_framework import filters
 from django.http import HttpResponse
 import csv
 from rest_framework.response import Response
