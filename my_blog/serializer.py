@@ -46,6 +46,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False, allow_blank=True)
     comments = CommentSerializer(many=True, read_only=True)
     author = serializers.CharField(source='author.username', read_only=True)
     likes = serializers.SerializerMethodField()
@@ -76,12 +77,16 @@ class PostSerializer(serializers.ModelSerializer):
 
 
     @extend_schema_field(int)
-    def get_likes(self, obg):
-        return obg.likes.count()
+    def get_likes(self, obj):
+        if hasattr(obj, "likes"):
+            return obj.likes.count()
+        return 0  # или None, как хочешь
 
     @extend_schema_field(int)
-    def get_favorites(self, obg):
-        return obg.favorites.count()
+    def get_favorites(self, obj):
+        if hasattr(obj, "favorites"):
+            return obj.favorites.count()
+        return 0
 
 
 class PostWorkFlowSerializer(serializers.ModelSerializer):

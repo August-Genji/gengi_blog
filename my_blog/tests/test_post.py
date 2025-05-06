@@ -2,6 +2,7 @@ import pytest
 from my_blog.models import Post
 from django.contrib.auth.models import User
 
+
 @pytest.mark.django_db
 class TestPostModel:
 

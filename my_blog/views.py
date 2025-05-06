@@ -1,3 +1,4 @@
+import requests
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
@@ -58,15 +59,23 @@ class PostViewSet(ModelViewSet):
             return http_response
         elif export_format == 'json':
             return Response(list(data))
-        else:
-            return Response({'error': 'Unsupported format'}, status=400)
 
+        return Response({'error': 'Unsupported format'}, status=400)
     def get_queryset(self):
         return Post.objects.annotate(like_count=Count('likes'), favorites_count=Count('favorites')).all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        title = serializer.validated_data.get('title')
+        description = serializer.validated_data.get('description')
 
+        instance = serializer.save(author=self.request.user)
+
+        if not instance.content:
+            webhook_url = "https://hook.eu2.make.com/..."
+            requests.post(webhook_url, json={
+                "id": instance.id,
+                "title": instance.title
+            })
     def get_serializer_context(self):
         return {'request': self.request}
 

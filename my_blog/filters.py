@@ -8,7 +8,7 @@ class PostWorkFlowFilter(django_filters.FilterSet):
 
     class Meta:
         model = PostWorkFlow
-        fields = ['step']  # важно: тут только реальные поля модели
+        fields = ['step']
 
 
 class PostFilter(django_filters.FilterSet):

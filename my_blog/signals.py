@@ -25,9 +25,10 @@ def handle_post_workflow(sender, instance, created, **kwargs):
                 note=f"Generated description {description[:50]}"
             )
 
-        if len(instance.content) > 100:
+        if instance.content and len(instance.content) > 100:
             instance.status = 'popular'
             instance.save()
+
             PostWorkFlow.objects.create(
                 post=instance,
                 step="marked_popular",
